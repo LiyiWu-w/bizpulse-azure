@@ -81,7 +81,7 @@ var validatedAiChatEnabled = !aiChatEnabled
   ? false
   : (applicationEnabled ? true : fail('aiChatEnabled_requires_enabled_application'))
 var openaiKeyVaultUrlParts = split(openaiKeyVaultUrl, '/')
-var openaiKeyVaultUrlIsCanonical = length(openaiKeyVaultUrlParts) == 4 ? openaiKeyVaultUrlParts[0] == 'https:' && empty(openaiKeyVaultUrlParts[1]) && endsWith(openaiKeyVaultUrlParts[2], '.${environment().suffixes.keyvaultDns}') && empty(openaiKeyVaultUrlParts[3]) && toLower(openaiKeyVaultUrl) == openaiKeyVaultUrl : false
+var openaiKeyVaultUrlIsCanonical = length(openaiKeyVaultUrlParts) == 3 ? openaiKeyVaultUrlParts[0] == 'https:' && empty(openaiKeyVaultUrlParts[1]) && endsWith(openaiKeyVaultUrlParts[2], '.vault.azure.net') && toLower(openaiKeyVaultUrl) == openaiKeyVaultUrl : false
 var validatedOpenaiKeyVaultUrl = !validatedAiChatEnabled
   ? (empty(openaiKeyVaultUrl) ? '' : fail('openaiKeyVaultUrl_must_be_empty_when_ai_disabled'))
   : (openaiKeyVaultUrlIsCanonical ? openaiKeyVaultUrl : fail('openaiKeyVaultUrl_required_when_ai_enabled'))
