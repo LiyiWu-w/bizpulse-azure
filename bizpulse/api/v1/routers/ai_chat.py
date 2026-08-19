@@ -138,16 +138,18 @@ def _principal(
         chat_epoch = 0
     else:
         actor = resolve_demo_session(request)
-        if actor.demo_data_imported_at is None:
-            raise DemoDataNotImportedError
         if mutate:
             _validate_csrf(request, actor.session_id, "demo")
-        if actor.dataset_version_id is None:
-            raise AIChatUnavailable("pinned_release_unavailable")
-        dataset_version_id = actor.dataset_version_id
         release_service = container.public_release_service
         if release_service is None:
             raise AIChatUnavailable("public_release_unavailable")
+        if actor.dataset_version_id is not None:
+            dataset_version_id = actor.dataset_version_id
+        else:
+            current = release_service.current()
+            if current is None:
+                raise AIChatUnavailable("public_release_unavailable")
+            dataset_version_id = current.dataset_version_id
         release = release_service.for_operator(dataset_version_id)
         actor_kind = "demo"
         session_created_at = actor.created_at
