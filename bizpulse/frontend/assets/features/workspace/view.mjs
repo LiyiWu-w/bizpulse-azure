@@ -674,7 +674,10 @@ function renderReleaseControls(root, dataSource) {
     shell.append(element("p", "", t(language, "workspace.loadingData")));
   } else {
     const list = element("ul", "release-version-list");
+    const preparedVersions = model.versions.filter((version) => !version.isCurrent);
+    const latestPreparedId = preparedVersions.at(-1)?.id;
     for (const version of model.versions) {
+      if (!version.isCurrent && version.id !== latestPreparedId) continue;
       const item = element("li", "release-version-card");
       item.dataset.versionId = version.id;
       item.append(
@@ -716,7 +719,7 @@ function renderReleaseControls(root, dataSource) {
           ? t(language, "workspace.retryCalculations")
           : t(language, "workspace.calculate"),
         () => prepareVersion(root, dataSource, version.id),
-        version.isCurrent || model.status === "preparing",
+        model.status === "preparing",
       );
       calculate.className = "secondary-button";
       const publish = actionButton(
