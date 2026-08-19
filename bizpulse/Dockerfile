@@ -29,6 +29,7 @@ WORKDIR /app
 
 COPY requirements.txt /app/requirements.txt
 RUN python -m pip install --no-cache-dir --require-hashes --requirement /app/requirements.txt
+RUN python -m pip install --no-cache-dir psycopg2-binary==2.9.10
 
 COPY --chown=bizpulse:bizpulse alembic /app/alembic
 COPY --chown=bizpulse:bizpulse alembic.ini /app/alembic.ini
