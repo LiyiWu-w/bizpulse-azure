@@ -715,9 +715,11 @@ function renderReleaseControls(root, dataSource) {
         item.append(domains);
       }
       const calculate = actionButton(
-        preparation && preparation.status !== "ready"
-          ? t(language, "workspace.retryCalculations")
-          : t(language, "workspace.calculate"),
+        model.status === "preparing"
+          ? "Calculating..."
+          : preparation && preparation.status !== "ready"
+            ? t(language, "workspace.retryCalculations")
+            : t(language, "workspace.calculate"),
         () => prepareVersion(root, dataSource, version.id),
         model.status === "preparing",
       );
@@ -736,6 +738,16 @@ function renderReleaseControls(root, dataSource) {
     }
     shell.append(list);
   }
+  if (model.status === "preparing") {
+    const preparing = element(
+      "p",
+      "status-note",
+      "Calculations submitted. Please wait while BizPulse updates the results.",
+    );
+    preparing.setAttribute("role", "status");
+    shell.append(preparing);
+  }
+
   if (model.error) {
     const error = element(
       "p",
