@@ -1020,14 +1020,18 @@ class ImportService:
         if assembly is None:
             raise WorkflowRevisionConflict
         with self._engine.connect() as connection:
-            if (
-                DatasetRepository(connection).find_version_by_content(
-                    self._workspace_id,
-                    content_sha256,
+            existing_version = DatasetRepository(connection).find_version_by_content(
+                self._workspace_id,
+                content_sha256,
+            )
+            if existing_version is not None:
+                return CommitResult(
+                    workflow_id,
+                    existing_version.id,
+                    existing_version.version_number,
+                    existing_version.content_sha256,
+                    created=False,
                 )
-                is not None
-            ):
-                raise WorkflowNotReady("duplicate_dataset_content")
         version_id = uuid5(
             IMPORT_NAMESPACE,
             f"version:{workflow_id}:{key_hash.hex()}",
