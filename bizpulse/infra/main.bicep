@@ -26,6 +26,7 @@ param postgresAdministratorLogin string
 @maxLength(63)
 param postgresServerName string
 @secure()
+param externalDatabaseUrl string = ''
 param postgresAdministratorPassword string
 @secure()
 param operatorPasswordHash string
@@ -174,6 +175,7 @@ module postgres 'modules/postgres.bicep' = if (deploymentEnabled) {
     postgresTier: postgresTier
     postgresStorageSizeGb: postgresStorageSizeGb
     postgresBackupRetentionDays: postgresBackupRetentionDays
+    createPostgres: empty(externalDatabaseUrl)
     vnetAddressPrefix: vnetAddressPrefix
     appSubnetPrefix: appSubnetPrefix
     postgresSubnetPrefix: postgresSubnetPrefix
@@ -181,7 +183,7 @@ module postgres 'modules/postgres.bicep' = if (deploymentEnabled) {
   }
 }
 
-var databaseUrl = deploymentEnabled
+var databaseUrl = !empty(externalDatabaseUrl) ? externalDatabaseUrl : deploymentEnabled
   ? 'postgresql+psycopg://${uriComponent(postgresAdministratorLogin)}:${uriComponent(postgresAdministratorPassword)}@${postgres!.outputs.serverFqdn}:5432/${postgres!.outputs.databaseName}?sslmode=require&connect_timeout=2'
   : ''
 

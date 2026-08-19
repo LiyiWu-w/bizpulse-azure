@@ -11,6 +11,7 @@ param postgresServerName string
 param postgresSkuName string
 param postgresTier string
 param postgresStorageSizeGb int
+param createPostgres bool = true
 param postgresBackupRetentionDays int
 param vnetAddressPrefix string
 param appSubnetPrefix string
@@ -80,7 +81,7 @@ resource privateDnsLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2
   }
 }
 
-resource server 'Microsoft.DBforPostgreSQL/flexibleServers@2024-08-01' = {
+resource server 'Microsoft.DBforPostgreSQL/flexibleServers@2024-08-01' = if (createPostgres) {
   name: postgresServerName
   location: location
   tags: tags
@@ -118,7 +119,7 @@ resource server 'Microsoft.DBforPostgreSQL/flexibleServers@2024-08-01' = {
   ]
 }
 
-resource database 'Microsoft.DBforPostgreSQL/flexibleServers/databases@2024-08-01' = {
+resource database 'Microsoft.DBforPostgreSQL/flexibleServers/databases@2024-08-01' = if (createPostgres) {
   parent: server
   name: 'bizpulse'
   properties: {
@@ -128,6 +129,6 @@ resource database 'Microsoft.DBforPostgreSQL/flexibleServers/databases@2024-08-0
 }
 
 output appSubnetId string = appSubnet.id
-output databaseName string = database.name
-output serverFqdn string = server.properties.fullyQualifiedDomainName
-output serverId string = server.id
+output databaseName string = createPostgres ? database!.name : 'external'
+output serverFqdn string = createPostgres ? server!.properties.fullyQualifiedDomainName : ''
+output serverId string = createPostgres ? server!.id : ''
