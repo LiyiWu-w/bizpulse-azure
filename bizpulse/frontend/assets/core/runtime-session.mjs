@@ -1,6 +1,6 @@
 export function runtimeModeForPath(pathname) {
   const normalized = pathname.replace(/\/+$/, "") || "/";
-  if (normalized === "/demo") return "viewer";
+  if (normalized === "/demo") return "operator";
   if (normalized === "/app") return "operator";
   throw new Error("RUNTIME_PATH_INVALID");
 }
