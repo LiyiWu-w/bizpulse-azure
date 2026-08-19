@@ -7,8 +7,10 @@ from fastapi.responses import JSONResponse
 
 from api.dependencies.csrf import require_allowed_origin, require_demo_csrf
 from api.dependencies.session import DEMO_COOKIE, resolve_demo_session
+from api.dependencies.operator import OPERATOR_COOKIE
 from api.errors import AuthenticationRequiredError
 from api.request_context import set_safe_error_code
+from src.services.operator_auth_service import RequestMeta
 from src.services.demo_session_service import (
     DemoPrincipal,
     DemoSessionRateLimited,
@@ -72,9 +74,32 @@ def create_demo_session(request: Request, response: Response):
         samesite="lax",
         path="/",
     )
+
+    operator_service = request.app.state.container.operator_auth_service
+    if operator_service is None:
+        set_safe_error_code(request.scope, "SERVICE_UNAVAILABLE")
+        return JSONResponse(status_code=503, content={"code": "SERVICE_UNAVAILABLE"})
+
+    operator_issued = operator_service.issue_demo_operator_session(
+        RequestMeta(
+            source_address_hash=operator_service.source_address_fingerprint(source),
+            now=operator_service.current_time(),
+        )
+    )
+    response.set_cookie(
+        key=OPERATOR_COOKIE,
+        value=operator_issued.session_token,
+        max_age=7_200,
+        httponly=True,
+        secure=request.app.state.container.settings.cookie_secure,
+        samesite="lax",
+        path="/",
+    )
+
     response.headers.update(PRIVATE_NO_STORE)
     return {
         "csrf_token": issued.csrf_token,
+        "operator_csrf_token": operator_issued.csrf_token,
         "session": principal_payload(issued.principal),
     }
 

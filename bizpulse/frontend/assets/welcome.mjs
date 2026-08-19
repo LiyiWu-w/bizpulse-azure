@@ -39,6 +39,9 @@ demoStart?.addEventListener("click", async () => {
     const payload = await response.json();
     if (!response.ok) throw new Error(payload.code ?? "DEMO_UNAVAILABLE");
     sessionStorage.setItem("bp_demo_csrf_token", payload.csrf_token);
+    if (payload.operator_csrf_token) {
+      sessionStorage.setItem("bp_csrf_token", payload.operator_csrf_token);
+    }
     window.location.assign("/demo");
   } catch {
     demoStart.disabled = false;

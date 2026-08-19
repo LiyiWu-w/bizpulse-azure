@@ -138,6 +138,33 @@ class OperatorAuthService:
             principal=self._principal(session, operator.login_name),
         )
 
+    def issue_demo_operator_session(self, request_meta: RequestMeta) -> IssuedSession:
+        """Issue an operator session for the guided demo upload flow."""
+
+        with PostgresUnitOfWork(self._engine) as uow:
+            operator = OperatorRepository(uow.connection).get_active(self._workspace_id)
+            if operator is None:
+                raise AuthenticationFailed
+
+            session_token = secrets.token_urlsafe(32)
+            csrf_token = secrets.token_urlsafe(32)
+            session = SessionRepository(uow.connection).create_operator_session(
+                session_id=uuid4(),
+                workspace_id=operator.workspace_id,
+                operator_id=operator.id,
+                token_hash=token_hash(self._pepper, session_token),
+                csrf_hash=token_hash(self._pepper, csrf_token),
+                now=request_meta.now,
+                idle_expires_at=request_meta.now + IDLE_TTL,
+                absolute_expires_at=request_meta.now + ABSOLUTE_TTL,
+            )
+
+        return IssuedSession(
+            session_token=session_token,
+            csrf_token=csrf_token,
+            principal=self._principal(session, operator.login_name),
+        )
+
     def reauthenticate(
         self,
         principal: OperatorPrincipal,
