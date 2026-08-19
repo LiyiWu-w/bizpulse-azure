@@ -675,7 +675,7 @@ function renderReleaseControls(root, dataSource) {
   } else {
     const list = element("ul", "release-version-list");
     const preparedVersions = model.versions.filter((version) => !version.isCurrent);
-    const latestPreparedId = preparedVersions.at(-1)?.id;
+    const latestPreparedId = preparedVersions[0]?.id;
     for (const version of model.versions) {
       if (!version.isCurrent && version.id !== latestPreparedId) continue;
       const item = element("li", "release-version-card");
