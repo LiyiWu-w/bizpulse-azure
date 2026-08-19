@@ -107,8 +107,20 @@ def _principal(
 ) -> ChatPrincipal:
     operator_cookie = request.cookies.get(OPERATOR_COOKIE)
     demo_cookie = request.cookies.get(DEMO_COOKIE)
-    if bool(operator_cookie) == bool(demo_cookie):
+
+    if not operator_cookie and not demo_cookie:
         raise AuthenticationRequiredError
+
+    # Guided demo may carry both a demo cookie and a temporary operator cookie
+    # so upload/import can work. For AI chat, choose the actor by the page that
+    # initiated the same-origin request.
+    referer = request.headers.get("referer", "")
+    if operator_cookie and demo_cookie:
+        if "/demo" in referer:
+            operator_cookie = None
+        else:
+            demo_cookie = None
+
     container = request.app.state.container
     if operator_cookie:
         actor = resolve_operator(request)
