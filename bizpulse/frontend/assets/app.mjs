@@ -1,3 +1,7 @@
+if (window.location.pathname === "/demo") {
+  window.location.replace("/app");
+}
+
 import { ApiClient } from "./core/api-client.mjs?v=20260814";
 import {
   RuntimeSessionController,
